@@ -6,6 +6,8 @@ const SPECIAL_KEYS = ['Tab', 'Delete', 'Backspace', 'ShiftLeft', 'ShiftRight', '
   'ControlLeft', 'ControlRight', 'Escape', 'Enter', 'CapsLock',
   'ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft', 'Space'];
 
+const EXCLUDE_KEYIDS = ['comma', 'period', 'semicolon', 'quote', 'bracketleft', 'bracketright', 'backquote'];
+
 let CAPS = false;
 let SHIFT = false;
 let LANG = 'en';
@@ -44,11 +46,17 @@ const switchLang = () => {
 
 const getKeyValue = (keyId) => {
   const key = document.querySelector(`#${keyId} pre`);
-  let result = '';
 
   if (!key) return null;
-  if (SHIFT && keyId.slice(0, 3) !== 'key') result = document.querySelector(`#${keyId} pre`).innerText.slice(0, 1);
-  else result = document.querySelector(`#${keyId} pre`).innerText.slice(-1);
+
+  let result = document.querySelector(`#${keyId} pre`).innerText.slice(-1);
+
+  if (SHIFT) {
+    if ((LANG === 'en' && keyId.slice(0, 3) !== 'key')
+       || (LANG === 'ru' && (keyId.slice(0, 3) !== 'key' && !EXCLUDE_KEYIDS.includes(keyId)))) {
+      result = document.querySelector(`#${keyId} pre`).innerText.slice(0, 1);
+    }
+  }
   return result;
 };
 
@@ -146,10 +154,10 @@ const pressedSpecialKey = (keyId) => {
 const pressedCommonKey = (keyId, keyValue) => {
   const cursorPosition = INPUT.selectionStart;
   const beforeText = INPUT.value.slice(0, cursorPosition);
-  const efterText = INPUT.value.slice(cursorPosition);
+  const afterText = INPUT.value.slice(cursorPosition);
 
-  if (CAPS !== SHIFT) INPUT.value = beforeText + keyValue.toUpperCase() + efterText;
-  else INPUT.value = beforeText + keyValue.toLowerCase() + efterText;
+  if (CAPS !== SHIFT) INPUT.value = beforeText + ((keyValue) ? keyValue.toUpperCase() : '') + afterText;
+  else INPUT.value = beforeText + ((keyValue) ? keyValue.toLowerCase() : '') + afterText;
 
   INPUT.focus();
   INPUT.selectionStart = cursorPosition + 1;
@@ -258,7 +266,12 @@ const onMouseDown = (event) => {
 
 const onMouseOut = (event) => {
   if (event.fromElement && event.toElement && event.fromElement.id && event.toElement.id) {
-    if (event.target.closest('div').id !== 'capslock') unselectKey(event.target.closest('div').id);
+    const keyId = event.target.closest('div').id;
+    if (keyId !== 'capslock') {
+      unpressKey(keyId);
+      unselectKey(keyId);
+    }
+    if (keyId === 'shiftleft' || keyId === 'shiftright') SHIFT = false;
   }
 };
 
