@@ -65,3 +65,24 @@ pre {
   padding: 0 0 10px 2px;
   text-align: left;
 }
+
+.legend {
+  width: 1020px;
+  height: 100px;
+  margin-top: 25px;
+  font-family: "Open Sans";
+  font-size: 16px;
+
+  border-radius: 5px;
+  background-color: #6d9ffc;
+
+}
+
+.legend h2 {
+  margin: 0;
+  text-align: center;
+}
+
+.legend p {
+  text-align: center;
+}

@@ -102,7 +102,6 @@ export const KEYS = [
   // },
 ];
 
-
 export const KEYS_COMMON = {
   backquote: {
     val: '`', alt: '~', val2: 'ё', alt2: ' ',

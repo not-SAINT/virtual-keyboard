@@ -4,7 +4,7 @@ const KEY_SIZE = 50;
 const pressedKeys = new Set();
 const SPECIAL_KEYS = ['Tab', 'Delete', 'Backspace', 'ShiftLeft', 'ShiftRight', 'AltLeft', 'AltRight', 'MetaLeft',
   'ControlLeft', 'ControlRight', 'Escape', 'Enter', 'CapsLock',
-  'ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft', 'Space'];
+  'ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft', 'Space', 'NumpadEnter'];
 
 const EXCLUDE_KEYIDS = ['comma', 'period', 'semicolon', 'quote', 'bracketleft', 'bracketright', 'backquote'];
 
@@ -68,9 +68,7 @@ const movePositionUp = (cursorPosition) => {
   const lines = INPUT.value.split('\n');
   let cursorLineOffset = 0;
 
-  if (lines.length === 1) {
-    return 0;
-  }
+  if (lines.length === 1) return 0;
 
   postLinesLenght = lines[0].length + 1;
 
@@ -91,6 +89,16 @@ const movePositionUp = (cursorPosition) => {
   if (newPosition < 0) newPosition = 0;
 
   return newPosition;
+};
+
+const movePositionDown = (cursorPosition) => {
+  const text = INPUT.value;
+  const curLineEnd = text.indexOf('\n', cursorPosition);
+
+  if (cursorPosition === text.length || curLineEnd < 0) return text.length;
+  if (curLineEnd > cursorPosition) return curLineEnd;
+
+  return text.indexOf('\n', curLineEnd + 1);
 };
 
 const pressedSpecialKey = (keyId) => {
@@ -117,9 +125,10 @@ const pressedSpecialKey = (keyId) => {
         INPUT.value = INPUT.value.slice(0, cursorPosition) + INPUT.value.slice(cursorPositionEnd);
       } else {
         INPUT.value = beforeText.slice(0, -1) + afterText;
-        cursorPosition -= 1;
+        cursorPosition = cursorPosition > 0 ? cursorPosition - 1 : 0;
       }
       break;
+    case 'numpadenter':
     case 'enter':
       INPUT.value = `${beforeText}\n${afterText}`;
       cursorPosition += 1;
@@ -136,6 +145,8 @@ const pressedSpecialKey = (keyId) => {
       cursorPosition = cursorPosition > 0 ? cursorPosition - 1 : 0;
       break;
     case 'arrowdown':
+      cursorPosition = movePositionDown(cursorPosition);
+      break;
     case 'arrowright':
       cursorPosition += 1;
       break;
@@ -146,6 +157,7 @@ const pressedSpecialKey = (keyId) => {
       key.classList.add('key_selected');
       break;
   }
+  INPUT.blur();
   INPUT.focus();
   INPUT.selectionStart = cursorPosition;
   INPUT.selectionEnd = cursorPosition;
@@ -159,6 +171,7 @@ const pressedCommonKey = (keyId, keyValue) => {
   if (CAPS !== SHIFT) INPUT.value = beforeText + ((keyValue) ? keyValue.toUpperCase() : '') + afterText;
   else INPUT.value = beforeText + ((keyValue) ? keyValue.toLowerCase() : '') + afterText;
 
+  INPUT.blur();
   INPUT.focus();
   INPUT.selectionStart = cursorPosition + 1;
   INPUT.selectionEnd = cursorPosition + 1;
@@ -337,8 +350,17 @@ const createKeys = (keys) => {
   });
 };
 
+const createLegend = () => {
+  const elem = document.createElement('div');
+  elem.classList.add('legend');
+  elem.insertAdjacentHTML('beforeend', '<h2>Legend</h2><p>The Virtual keyboard was created in <b>Windows</b><br>Language switch hotkey - <b>Ctrl + Shift</b> or <b>Win</b></p>');
+
+  document.body.append(elem);
+};
+
 window.onload = () => {
   restoreState();
   createBase();
   createKeys(KEYS);
+  createLegend();
 };
