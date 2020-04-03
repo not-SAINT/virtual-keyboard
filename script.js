@@ -14,11 +14,11 @@ let LANG = 'en';
 let INPUT;
 
 const saveState = () => {
-  sessionStorage.setItem('keyboard-lang', LANG);
+  localStorage.setItem('keyboard-lang', LANG);
 };
 
 const restoreState = () => {
-  LANG = (sessionStorage.getItem('keyboard-lang')) ? sessionStorage.getItem('keyboard-lang') : 'en';
+  LANG = (localStorage.getItem('keyboard-lang')) ? localStorage.getItem('keyboard-lang') : 'en';
 };
 
 const generateCommonKeyInnerHtml = (keyValue, keyAltValue) => `<pre>${keyAltValue}<br>  ${keyValue.toUpperCase()}</pre>`;
@@ -168,6 +168,8 @@ const pressedCommonKey = (keyId, keyValue) => {
   const beforeText = INPUT.value.slice(0, cursorPosition);
   const afterText = INPUT.value.slice(cursorPosition);
 
+  if (pressedKeys.has('control')) return;
+
   if (CAPS !== SHIFT) INPUT.value = beforeText + ((keyValue) ? keyValue.toUpperCase() : '') + afterText;
   else INPUT.value = beforeText + ((keyValue) ? keyValue.toLowerCase() : '') + afterText;
 
@@ -215,6 +217,14 @@ const unselectKey = (keyId) => {
   }
 };
 
+const addPressedCtrl = (keyId) => {
+  if (keyId === 'controlleft' || keyId === 'controlright') pressedKeys.add(keyId.slice(0, 7));
+};
+
+const delPressedCtrl = (keyId) => {
+  if (keyId === 'controlleft' || keyId === 'controlright') pressedKeys.delete(keyId.slice(0, 7));
+};
+
 const onKeyUp = (event) => {
   const { code, keyCode } = event;
   const keyId = code.toLowerCase();
@@ -228,7 +238,7 @@ const onKeyUp = (event) => {
     SHIFT = false;
     pressedKeys.delete(keyId.slice(0, 5));
   }
-  if (keyId === 'controlleft' || keyId === 'controlright') pressedKeys.delete(keyId.slice(0, 7));
+  delPressedCtrl(keyId);
 };
 
 const onKeyDown = (event) => {
@@ -249,7 +259,7 @@ const onKeyDown = (event) => {
     SHIFT = true;
     pressedKeys.add(keyId.slice(0, 5));
   }
-  if (keyId === 'controlleft' || keyId === 'controlright') pressedKeys.add(keyId.slice(0, 7));
+  addPressedCtrl(keyId);
 
   if (pressedKeys.has('control') && pressedKeys.has('shift')) {
     switchLang();
@@ -263,6 +273,7 @@ const onMouseUp = (event) => {
   if (keyId !== 'keyboard') {
     unselectKey(keyId);
     unpressKey(keyId);
+    delPressedCtrl(keyId);
   }
 
   if (keyId === 'shiftleft' || keyId === 'shiftright') SHIFT = false;
@@ -273,6 +284,7 @@ const onMouseDown = (event) => {
   if (keyId !== 'keyboard') {
     selectKey(keyId);
     pressKey(keyId);
+    addPressedCtrl(keyId);
     if (keyId === 'shiftleft' || keyId === 'shiftright') SHIFT = true;
   }
 };
@@ -283,6 +295,7 @@ const onMouseOut = (event) => {
     if (keyId !== 'capslock') {
       unpressKey(keyId);
       unselectKey(keyId);
+      delPressedCtrl(keyId);
     }
     if (keyId === 'shiftleft' || keyId === 'shiftright') SHIFT = false;
   }
