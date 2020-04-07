@@ -1,3 +1,5 @@
-# virtual keyboard task #
+# Virtual keyboard task
 
-https://not-saint.github.io/virtual-keyboard/
+[**Virtual Keyboard**](https://not-saint.github.io/virtual-keyboard/)
+
+[**Task**](https://github.com/rolling-scopes-school/tasks/blob/master/tasks/codejam-virtual-keyboard.md)
